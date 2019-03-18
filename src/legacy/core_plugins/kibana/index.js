@@ -17,6 +17,7 @@
  * under the License.
  */
 
+console.log('in kibana');
 import Promise from 'bluebird';
 import { mkdirp as mkdirpNode } from 'mkdirp';
 import { resolve } from 'path';
