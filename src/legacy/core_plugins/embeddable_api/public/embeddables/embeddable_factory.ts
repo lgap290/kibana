@@ -75,8 +75,5 @@ export abstract class EmbeddableFactory<
    * @param {{ id: string }}
    * @return {Promise.<Embeddable>}
    */
-  public abstract create<E extends Embeddable>(
-    id: string,
-    initialInput: I
-  ): Promise<E | ErrorEmbeddable>;
+  public abstract create<E extends Embeddable>(initialInput: I): Promise<E | ErrorEmbeddable>;
 }

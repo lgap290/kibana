@@ -671,7 +671,12 @@ export class DashboardAppController {
         });
       };
 
-      showAddPanel(dashboardStateManager.addNewPanel, addNewVis, embeddableFactories);
+      showAddPanel(
+        dashboardStateManager.addNewPanel,
+        addNewVis,
+        embeddableFactories,
+        dashboardEmbeddable
+      );
     };
     navActions[TopNavIds.OPTIONS] = (menuItem, navController, anchorElement) => {
       showOptionsPopover({

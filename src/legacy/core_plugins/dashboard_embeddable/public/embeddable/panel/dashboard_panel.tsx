@@ -56,6 +56,7 @@ class DashboardPanelUi extends React.Component<DashboardPanelUiProps, State> {
   [panel: string]: any;
   public mounted: boolean;
   public embeddable!: DashboardEmbeddable | ErrorEmbeddable;
+  private unsubscribe?: () => void;
 
   constructor(props: DashboardPanelUiProps) {
     super(props);
@@ -68,27 +69,11 @@ class DashboardPanelUi extends React.Component<DashboardPanelUiProps, State> {
 
   public async componentDidMount() {
     this.mounted = true;
-    const { embeddableFactory, panel } = this.props;
-
-    const embeddable = await embeddableFactory.create<DashboardEmbeddable>(
-      panel.embeddableId,
-      this.props.container.getInputForEmbeddable(panel.embeddableId)
-    );
-    if (this.mounted) {
-      this.embeddable = embeddable;
-
-      this.setState({ loading: false });
-
-      // if (isErrorEmbeddable(embeddable)) {
-      //   embeddable.setContainer(this.props.container);
-      //   (embeddable as ErrorEmbeddable).renderWithChrome(this.panelElement);
-      // } else {
-      this.props.container.addEmbeddable(embeddable);
-      embeddable.renderWithChrome(this.panelElement);
-      //   }
-    } else {
-      embeddable.destroy();
-    }
+    this.unsubscribe = this.props.container.subscribeToOutputChanges(() => {
+      if (!this.embeddable) {
+        this.renderEmbeddable();
+      }
+    });
   }
 
   public componentWillUnmount() {
@@ -99,6 +84,9 @@ class DashboardPanelUi extends React.Component<DashboardPanelUiProps, State> {
       this.props.container.getEmbeddable(this.embeddable.id)
     ) {
       this.props.container.removeEmbeddable(this.embeddable);
+    }
+    if (this.unsubscribe) {
+      this.unsubscribe();
     }
   }
 
@@ -142,6 +130,16 @@ class DashboardPanelUi extends React.Component<DashboardPanelUiProps, State> {
 
   public render() {
     return this.renderEmbeddableViewport();
+  }
+
+  private renderEmbeddable() {
+    this.embeddable = this.props.container.getEmbeddable(this.props.panel.embeddableId);
+    if (this.mounted && this.embeddable) {
+      this.setState({ loading: false });
+      this.embeddable.renderWithChrome(this.panelElement);
+    } else if (this.embeddable) {
+      this.embeddable.destroy();
+    }
   }
 }
 

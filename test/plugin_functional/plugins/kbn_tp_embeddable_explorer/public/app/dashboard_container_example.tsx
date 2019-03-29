@@ -22,18 +22,24 @@ import {
   DashboardContainer,
   DashboardContainerFactory,
 } from 'plugins/dashboard_embeddable/index';
+import { EmbeddableFactory, ErrorEmbeddable, ViewMode } from 'plugins/embeddable_api/index';
 import React from 'react';
-import { EmbeddableFactory } from 'plugins/embeddable_api/index';
 import { dashboardInput } from './dashboard_input';
 
 export interface Props {
   getEmbeddableFactory: <I, O>(type: string) => EmbeddableFactory<I, O> | undefined;
 }
 
+export function isErrorEmbeddable(
+  embeddable: ErrorEmbeddable | DashboardContainer
+): embeddable is ErrorEmbeddable {
+  return (embeddable as ErrorEmbeddable).getInput().errorMessage !== undefined;
+}
+
 export class DashboardContainerExample extends React.Component<Props, { viewMode: string }> {
   private mounted = false;
   private dashboardEmbeddableRoot: React.RefObject<HTMLDivElement>;
-  private dashboardContainer: DashboardContainer | undefined;
+  private container: DashboardContainer | ErrorEmbeddable | undefined;
 
   public constructor(props: Props) {
     super(props);
@@ -51,29 +57,29 @@ export class DashboardContainerExample extends React.Component<Props, { viewMode
     ) as DashboardContainerFactory;
     dashboardFactory.setGetEmbeddableFactory(this.props.getEmbeddableFactory);
     if (dashboardFactory) {
-      this.dashboardContainer = await dashboardFactory.create({ id: '123' }, dashboardInput);
-      if (this.mounted && this.dashboardContainer) {
-        this.dashboardContainer.render(this.dashboardEmbeddableRoot.current);
+      this.container = await dashboardFactory.create(dashboardInput);
+      if (this.mounted && this.container && this.dashboardEmbeddableRoot.current) {
+        this.container.renderWithChrome(this.dashboardEmbeddableRoot.current);
       }
     }
   }
 
   public componentWillUnmount() {
     this.mounted = false;
-    if (this.dashboardContainer) {
-      this.dashboardContainer.destroy();
+    if (this.container) {
+      this.container.destroy();
     }
   }
 
   public switchViewMode = () => {
     this.setState(prevState => {
-      if (!this.dashboardContainer) {
+      if (!this.container || isErrorEmbeddable(this.container)) {
         return;
       }
-      const newMode = prevState.viewMode === 'view' ? 'edit' : 'view';
-      const newState = _.cloneDeep(this.dashboardContainer.getOutput());
+      const newMode = prevState.viewMode === 'view' ? ViewMode.EDIT : ViewMode.VIEW;
+      const newState = { ...this.container.getOutput() };
       newState.viewMode = newMode;
-      this.dashboardContainer.setInput(newState);
+      this.container.setInput(newState);
       return { viewMode: newMode };
     });
   };

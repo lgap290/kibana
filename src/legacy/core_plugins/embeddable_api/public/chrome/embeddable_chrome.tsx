@@ -38,7 +38,7 @@ import { PanelHeader } from './panel_header/panel_header';
 
 interface Props {
   embeddable: Embeddable;
-  container: Container;
+  container?: Container;
 }
 
 interface State {
@@ -54,9 +54,14 @@ export class EmbeddableChrome extends React.Component<Props, State> {
   private mounted: boolean = false;
   constructor(props: Props) {
     super(props);
+    const viewMode = this.props.container ? this.props.container.getViewMode() : ViewMode.VIEW;
+    const hidePanelTitles = this.props.container
+      ? this.props.container.getHidePanelTitles()
+      : false;
+
     this.state = {
-      viewMode: this.props.container.getViewMode(),
-      hidePanelTitles: this.props.container.getHidePanelTitles(),
+      viewMode,
+      hidePanelTitles,
       closeContextMenu: false,
     };
 
@@ -65,14 +70,16 @@ export class EmbeddableChrome extends React.Component<Props, State> {
 
   public componentWillMount() {
     this.mounted = true;
-    this.unsubscribe = this.props.container.subscribeToOutputChanges(() => {
-      if (this.mounted) {
-        this.setState({
-          viewMode: this.props.container.getViewMode(),
-          hidePanelTitles: this.props.container.getHidePanelTitles(),
-        });
-      }
-    });
+    if (this.props.container) {
+      this.unsubscribe = this.props.container.subscribeToOutputChanges(() => {
+        if (this.mounted && this.props.container) {
+          this.setState({
+            viewMode: this.props.container.getViewMode(),
+            hidePanelTitles: this.props.container.getHidePanelTitles(),
+          });
+        }
+      });
+    }
   }
 
   public componentWillUnmount() {
@@ -97,9 +104,9 @@ export class EmbeddableChrome extends React.Component<Props, State> {
     const classes = classNames('embPanel', {
       'embPanel--editing': !viewOnlyMode,
     });
-    const title =
-      this.props.embeddable.getInput().customization.title ||
-      this.props.embeddable.getOutput().title;
+    const customization = this.props.embeddable.getInput().customization;
+    const customizedTitle = customization ? customization.title : undefined;
+    const title = customizedTitle ? customizedTitle : this.props.embeddable.getOutput().title;
     return (
       <EuiPanel className={classes} data-test-subj="embeddablePanel" paddingSize="none">
         <PanelHeader

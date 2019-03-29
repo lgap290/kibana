@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import {
   Container,
   ContainerInput,
@@ -31,10 +30,12 @@ import {
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { TimeRange } from 'ui/timefilter/time_history';
+import uuid from 'uuid';
 
 import { I18nProvider } from '@kbn/i18n/react';
 import { DASHBOARD_CONTAINER_TYPE } from './dashboard_container_factory';
-import { PanelStateMap } from './types';
+import { createPanelState } from './panel';
+import { DashboardPanelState, PanelStateMap } from './types';
 // @ts-ignore
 import { DashboardViewport } from './viewport/dashboard_viewport';
 
@@ -79,13 +80,21 @@ export class DashboardContainer extends Container<
   DashboardEmbeddableInput
 > {
   constructor(
-    { id }: { id: string },
     initialInput: DashboardContainerInput,
     private getEmbeddableFactory: <I, O>(type: string) => EmbeddableFactory<I, O> | undefined
   ) {
-    super({ type: DASHBOARD_CONTAINER_TYPE, id }, initialInput, initialInput);
+    super(DASHBOARD_CONTAINER_TYPE, initialInput, initialInput);
 
     this.subscribeToInputChanges(input => this.emitOutputChanged(input));
+  }
+
+  public createPanelStateForEmbeddable(embeddable: Embeddable): DashboardPanelState {
+    const id = uuid.v4();
+    return createPanelState(
+      { ...embeddable.getInput(), id },
+      embeddable.type,
+      Object.values(this.input.panels)
+    );
   }
 
   public onToggleExpandPanel(id: string) {
@@ -139,10 +148,9 @@ export class DashboardContainer extends Container<
       timeRange,
       refreshConfig,
       viewMode,
-      ...panel.embeddableInput,
+      ...panel.initialInput,
       customization: panel.customization,
+      id: panel.embeddableId,
     };
   }
 }
-
-console.log('in dashboard container: all done');

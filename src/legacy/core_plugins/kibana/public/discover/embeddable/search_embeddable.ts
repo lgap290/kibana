@@ -74,7 +74,6 @@ interface SearchEmbeddableConfig {
   $rootScope: ng.IRootScopeService;
   $compile: ng.ICompileService;
   factory: SearchEmbeddableFactory;
-  id: string;
   courier: any;
 }
 
@@ -124,10 +123,10 @@ export class SearchEmbeddable extends Embeddable<SearchInput, SearchOutput> {
   private courier: any;
 
   constructor(
-    { savedSearch, editUrl, $rootScope, $compile, id, courier }: SearchEmbeddableConfig,
+    { savedSearch, editUrl, $rootScope, $compile, courier }: SearchEmbeddableConfig,
     initialInput: SearchInput
   ) {
-    super({ type: SEARCH_EMBEDDABLE_TYPE, id }, initialInput, {
+    super(SEARCH_EMBEDDABLE_TYPE, initialInput, {
       editUrl,
       title: savedSearch.title,
       indexPatterns: _.compact([savedSearch.searchSource.getField('index')]),

@@ -27,7 +27,7 @@ import {
   Filters,
   Query,
   TimeRange,
-} from 'plugins/embeddable_api/';
+} from 'plugins/embeddable_api/index';
 import { StaticIndexPattern } from 'ui/index_patterns';
 import { PersistedState } from 'ui/persisted_state';
 import { VisualizeLoader } from 'ui/visualize/loader';
@@ -46,7 +46,6 @@ export interface VisualizeEmbeddableConfiguration {
   indexPatterns?: StaticIndexPattern[];
   editUrl: string;
   loader: VisualizeLoader;
-  id: string;
 }
 
 interface VisualizeOverrides {
@@ -69,7 +68,6 @@ export interface VisualizeOutput extends EmbeddableOutput {
   title: string;
   editUrl: string;
   indexPatterns?: StaticIndexPattern[];
-  customization?: {};
   timeRange?: TimeRange;
   query?: Query;
   filters?: Filters;
@@ -87,16 +85,17 @@ export class VisualizeEmbeddable extends Embeddable<VisualizeInput, VisualizeOut
   private filters?: Filters;
 
   constructor(
-    { savedVisualization, indexPatterns, editUrl, loader, id }: VisualizeEmbeddableConfiguration,
+    { savedVisualization, indexPatterns, editUrl, loader }: VisualizeEmbeddableConfiguration,
     initialInput: VisualizeInput
   ) {
-    super({ type: VISUALIZE_EMBEDDABLE_TYPE, id }, initialInput, {
+    super(VISUALIZE_EMBEDDABLE_TYPE, initialInput, {
       title: savedVisualization.title,
       editUrl,
       indexPatterns,
       timeRange: initialInput.timeRange,
       filters: initialInput.filters,
       query: initialInput.query,
+      customization: {},
     });
     this.savedVisualization = savedVisualization;
     this.loader = loader;

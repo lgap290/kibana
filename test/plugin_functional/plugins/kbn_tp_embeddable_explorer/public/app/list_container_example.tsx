@@ -16,59 +16,60 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { Container, EmbeddableFactory } from 'plugins/embeddable_api/index';
 import {
   VisualizeInput,
   VisualizeOutput,
 } from 'plugins/kibana/visualize/embeddable/visualize_embeddable';
 import { VISUALIZE_EMBEDDABLE_TYPE } from 'plugins/kibana/visualize/embeddable/visualize_embeddable_factory';
 import React, { ReactNode } from 'react';
-import { EmbeddableFactory } from 'plugins/embeddable_api/index';
 import { CustomContainer } from '../embeddables/custom_container';
+import { ListContainer } from '../embeddables/list_container';
 
-export interface CustomContainerExampleProps {
+interface Props {
   getEmbeddableFactory: <I, O>(type: string) => EmbeddableFactory<I, O> | undefined;
 }
 
-export class CustomContainerExample extends React.Component<CustomContainerExampleProps> {
-  private dashboardEmbeddableRoot: React.RefObject<HTMLDivElement>;
-  private customContainer: CustomContainer;
+export class ListContainerExample extends React.Component<Props> {
+  private root: React.RefObject<HTMLDivElement>;
+  private container: Container;
 
-  public constructor(props: CustomContainerExampleProps) {
+  public constructor(props: Props) {
     super(props);
 
-    this.dashboardEmbeddableRoot = React.createRef();
-    this.customContainer = new CustomContainer();
+    this.root = React.createRef();
+    this.container = new ListContainer();
   }
 
   public async componentDidMount() {
-    const visualizeFactory = this.props.getEmbeddableFactory<VisualizeInput, VisualizeOutput>(
-      VISUALIZE_EMBEDDABLE_TYPE
-    );
-    if (visualizeFactory) {
-      const embeddableConfigs = [
-        {
-          savedObjectId: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
-          id: '3',
-        },
-        {
-          id: '2',
-          savedObjectId: 'ed8436b0-b88b-11e8-a6d9-e546fe2bba5f',
-        },
-      ];
-      const embeddable1 = await visualizeFactory.create(embeddableConfigs[0], {
-        customization: {},
-      });
-      const embeddable2 = await visualizeFactory.create(embeddableConfigs[1], {
-        customization: {},
-      });
-      this.customContainer.setEmbeddables(embeddable1, embeddable2);
-      this.customContainer.render(this.dashboardEmbeddableRoot.current);
-    }
+    // const visualizeFactory = this.props.getEmbeddableFactory<VisualizeInput, VisualizeOutput>(
+    //   VISUALIZE_EMBEDDABLE_TYPE
+    // );
+    // if (visualizeFactory) {
+    //   const embeddableConfigs = [
+    //     {
+    //       savedObjectId: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
+    //       id: '3',
+    //     },
+    //     {
+    //       id: '2',
+    //       savedObjectId: 'ed8436b0-b88b-11e8-a6d9-e546fe2bba5f',
+    //     },
+    //   ];
+    //   const embeddable1 = await visualizeFactory.create(embeddableConfigs[0], {
+    //     customization: {},
+    //   });
+    //   const embeddable2 = await visualizeFactory.create(embeddableConfigs[1], {
+    //     customization: {},
+    //   });
+    //   this.container.setEmbeddables(embeddable1, embeddable2);
+    this.container.renderWithChrome(this.root.current);
+    // }
   }
 
   public componentWillUnmount() {
-    if (this.customContainer) {
-      this.customContainer.destroy();
+    if (this.container) {
+      this.container.destroy();
     }
   }
   public render() {
@@ -79,7 +80,7 @@ export class CustomContainerExample extends React.Component<CustomContainerExamp
           This is a custom container object, to show that visualize embeddables can be rendered
           outside of the dashboard container.
         </p>
-        <div ref={this.dashboardEmbeddableRoot} />
+        <div ref={this.root} />
       </div>
     );
   }

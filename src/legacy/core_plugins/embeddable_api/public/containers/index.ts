@@ -17,4 +17,4 @@
  * under the License.
  */
 
-export { Container, ContainerInput, ContainerOutput } from './container';
+export { Container, ContainerInput, ContainerOutput, PanelState } from './container';

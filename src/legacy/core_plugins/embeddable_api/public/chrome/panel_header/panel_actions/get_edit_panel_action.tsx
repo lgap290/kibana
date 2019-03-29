@@ -44,7 +44,13 @@ export function getEditPanelAction() {
         const editUrl = embeddable.getOutput().editUrl;
         return !editUrl;
       },
-      isVisible: ({ container }: PanelActionAPI) => container.getViewMode() === ViewMode.EDIT,
+      isVisible: ({ container }: PanelActionAPI) => {
+        if (container && container.getViewMode() === ViewMode.EDIT) {
+          return true;
+        } else {
+          return false;
+        }
+      },
       getHref: ({ embeddable }: PanelActionAPI) => {
         if (embeddable && embeddable.getOutput().editUrl) {
           return embeddable.getOutput().editUrl;

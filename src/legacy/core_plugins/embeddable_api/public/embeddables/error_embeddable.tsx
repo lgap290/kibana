@@ -29,16 +29,12 @@ interface ErrorInput extends EmbeddableInput {
 }
 
 export class ErrorEmbeddable extends Embeddable<ErrorInput, EmbeddableOutput> {
-  constructor(id: string, error: string) {
-    super(
-      { id, type: ERROR_EMBEDDABLE_TYPE },
-      { errorMessage: error, customization: {} },
-      { customization: {} }
-    );
+  constructor(input: ErrorInput) {
+    super(ERROR_EMBEDDABLE_TYPE, input, { customization: {} });
   }
 
   public render(dom: React.ReactNode) {
     // @ts-ignore
-    ReactDOM.render(<EuiText>Error: {this.input.errorMessage} </EuiText>, dom);
+    ReactDOM.render(<EuiText>Error:{this.input.errorMessage}</EuiText>, dom);
   }
 }

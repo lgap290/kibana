@@ -16,19 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-export * from './actions';
-export * from './triggers';
-export { Container, ContainerInput, ContainerOutput, PanelState } from './containers';
-export {
-  EmbeddableFactory,
-  EmbeddableFactoriesRegistryProvider,
-  EmbeddableInstanceConfiguration,
-  Embeddable,
-  embeddableFactories,
-  OutputSpec,
-  ErrorEmbeddable,
-  EmbeddableInput,
-  EmbeddableOutput,
-} from './embeddables';
-export * from './context_menu_actions';
-export { Query, Filters, Filter, TimeRange, RefreshConfig, ViewMode } from './types';
+import { Container } from 'plugins/embeddable_api/index';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ListDisplay } from './list_display';
+
+export class ListContainer extends Container {
+  public render(node: HTMLElement) {
+    ReactDOM.render(<ListDisplay embeddables={Object.values(this.embeddables)} />, node);
+  }
+}

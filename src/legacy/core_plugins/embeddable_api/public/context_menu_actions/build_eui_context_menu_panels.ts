@@ -60,7 +60,7 @@ function buildEuiContextMenuPanelItemsAndChildPanels<
   contextMenuPanelId: string;
   actions: Array<ContextMenuAction<E, C>>;
   embeddable: E;
-  container: C;
+  container?: C;
 }) {
   const items: EuiContextMenuPanelItemDescriptor[] = [];
   const childPanels: EuiContextMenuPanelDescriptor[] = [];
@@ -115,7 +115,7 @@ export function buildEuiContextMenuPanels<
   contextMenuPanel: ContextMenuPanel<E, C>;
   actions: Array<ContextMenuAction<E, C>>;
   embeddable: E;
-  container: C;
+  container?: C;
 }): EuiContextMenuPanelDescriptor[] {
   const euiContextMenuPanel: EuiContextMenuPanelDescriptor = {
     id: contextMenuPanel.id,
@@ -152,7 +152,7 @@ function convertPanelActionToContextMenuItem<
   embeddable,
 }: {
   action: ContextMenuAction<E, C>;
-  container: C;
+  container?: C;
   embeddable: E;
 }): EuiContextMenuPanelItemDescriptor {
   const menuPanelItem: EuiContextMenuPanelItemDescriptor = {

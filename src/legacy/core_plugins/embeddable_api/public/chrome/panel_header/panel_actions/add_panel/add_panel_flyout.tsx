@@ -17,28 +17,41 @@
  * under the License.
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n/react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { toastNotifications } from 'ui/notify';
 import { SavedObjectFinder } from 'ui/saved_objects/components/saved_object_finder';
 
 import {
+  EuiButton,
   EuiFlexGroup,
   EuiFlexItem,
   EuiFlyout,
-  EuiFlyoutHeader,
-  EuiFlyoutFooter,
   EuiFlyoutBody,
-  EuiButton,
-  EuiTitle, EuiSelect
+  EuiFlyoutFooter,
+  EuiFlyoutHeader,
+  EuiSelect,
+  EuiTitle,
 } from '@elastic/eui';
 
-export class DashboardAddPanel extends React.Component {
-  onAddPanel = (id, type, name) => {
-    this.props.addNewPanel(id, type);
+import { Container } from '../../../../containers';
+import { embeddableFactories } from '../../../../embeddables';
 
+interface Props {
+  onClose: () => void;
+  container: Container;
+}
+
+export class AddPanelFlyout extends React.Component<Props> {
+  private lastToast: any;
+
+  constructor(props: Props) {
+    super(props);
+  }
+
+  public showToast = (id: string, type: string, name: string) => {
     // To avoid the clutter of having toast messages cover flyout
     // close previous toast message before creating a new one
     if (this.lastToast) {
@@ -59,19 +72,21 @@ export class DashboardAddPanel extends React.Component {
     });
   };
 
-  createNewEmbeddable(type) {
-    const factory = this.props.embeddableFactories.find(factory => factory.type === type);
-    const embeddable = factory.create();
-    this.props.container.addEmbeddable(embeddable);
-  }
+  public createNewEmbeddable = async (type: string) => {
+    // const factory = embeddableFactories.getFactoryByName(type);
+    await this.props.container.addNewEmbeddable(type);
+    // this.props.container.addEmbeddable(embeddable);
+  };
 
-  onAddPanel = (data) => {
-    const factory = this.props.embeddableFactories.find(factory => factory.type === data.type);
-    const embeddable = factory.create(data);
+  public onAddPanel = async (id: string, type: string, name: string) => {
+    const factory = embeddableFactories.getFactoryByName(type);
+    const embeddable = await factory.create({ savedObjectId: id });
     this.props.container.addEmbeddable(embeddable);
-  }
 
-  render() {
+    this.showToast(id, type, name);
+  };
+
+  public render() {
     return (
       <EuiFlyout ownFocus onClose={this.props.onClose} data-test-subj="dashboardAddPanel">
         <EuiFlyoutHeader hasBorder>
@@ -87,7 +102,7 @@ export class DashboardAddPanel extends React.Component {
         <EuiFlyoutBody>
           <SavedObjectFinder
             onChoose={this.onAddPanel}
-            savedObjectMetaData={this.props.embeddableFactories
+            savedObjectMetaData={Object.values(embeddableFactories.getFactories())
               .filter(embeddableFactory => Boolean(embeddableFactory.savedObjectMetaData))
               .map(({ savedObjectMetaData }) => savedObjectMetaData)}
             showFilter={true}
@@ -103,16 +118,13 @@ export class DashboardAddPanel extends React.Component {
           <EuiFlexGroup justifyContent="flexEnd">
             <EuiFlexItem grow={false}>
               <EuiSelect
-                options={this.props.embeddableFactories.map(factory => {text: `Create new ${factory.displayName}`; value: factory.type; })}
+                options={Object.values(embeddableFactories.getFactories()).map(factory => ({
+                  text: `Create new ${factory.name}`,
+                  value: factory.name,
+                }))}
                 value=""
                 onChange={e => this.createNewEmbeddable(e.target.value)}
               />
-              <EuiButton fill onClick={this.props.addNewVis} data-test-subj="addNewSavedObjectLink">
-                <FormattedMessage
-                  id="kbn.dashboard.topNav.addPanel.createNewVisualizationButtonLabel"
-                  defaultMessage="Create new visualization"
-                />
-              </EuiButton>
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiFlyoutFooter>
@@ -120,9 +132,3 @@ export class DashboardAddPanel extends React.Component {
     );
   }
 }
-
-DashboardAddPanel.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  addNewPanel: PropTypes.func.isRequired,
-  addNewVis: PropTypes.func.isRequired,
-};

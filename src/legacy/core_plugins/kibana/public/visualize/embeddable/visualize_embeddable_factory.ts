@@ -26,14 +26,20 @@ import { VisualizeEmbeddable, VisualizeInput, VisualizeOutput } from './visualiz
 import { Legacy } from 'kibana';
 import { VisTypesRegistry } from 'ui/registry/vis_types';
 import { VisualizationAttributes } from '../../../../../server/saved_objects/service/saved_objects_client';
+import { showNewVisModal } from '../../visualize/wizard';
 import { SavedVisualizations } from '../types';
 import { DisabledLabEmbeddable } from './disabled_lab_embeddable';
 import { getIndexPattern } from './get_index_pattern';
 export const VISUALIZE_EMBEDDABLE_TYPE = 'visualization';
 
-export class VisualizeEmbeddableFactory extends EmbeddableFactory<VisualizationAttributes> {
+export class VisualizeEmbeddableFactory extends EmbeddableFactory<
+  VisualizeInput,
+  VisualizeOutput,
+  VisualizationAttributes
+> {
   private savedVisualizations: SavedVisualizations;
   private config: Legacy.KibanaConfig;
+  private visTypes: VisTypesRegistry;
 
   constructor(
     savedVisualizations: SavedVisualizations,
@@ -64,6 +70,7 @@ export class VisualizeEmbeddableFactory extends EmbeddableFactory<VisualizationA
         },
       },
     });
+    this.visTypes = visTypes;
     this.config = config;
     this.savedVisualizations = savedVisualizations;
   }
@@ -122,34 +129,45 @@ export class VisualizeEmbeddableFactory extends EmbeddableFactory<VisualizationA
    * @param onEmbeddableStateChanged
    * @return
    */
-  public async create(id: string, initialInput: VisualizeInput) {
+  public async create(initialInput: VisualizeInput) {
     if (!initialInput.savedObjectId) {
-      return new ErrorEmbeddable(id, 'No saved object id provided');
+      return new ErrorEmbeddable({ ...initialInput, errorMessage: 'No saved object id provided' });
     }
 
-    const visId = initialInput.savedObjectId;
+    try {
+      const visId = initialInput.savedObjectId;
 
-    const editUrl = this.getEditPath(visId);
-    const loader = await getVisualizeLoader();
-    const savedObject = await this.savedVisualizations.get(visId);
-    const isLabsEnabled = this.config.get<boolean>('visualize:enableLabs');
+      const editUrl = this.getEditPath(visId);
+      const loader = await getVisualizeLoader();
+      const savedObject = await this.savedVisualizations.get(visId);
+      const isLabsEnabled = this.config.get<boolean>('visualize:enableLabs');
 
-    if (!isLabsEnabled && savedObject.vis.type.stage === 'experimental') {
-      return new DisabledLabEmbeddable(savedObject.title, initialInput);
+      if (!isLabsEnabled && savedObject.vis.type.stage === 'experimental') {
+        return new DisabledLabEmbeddable(savedObject.title, initialInput);
+      }
+
+      const indexPattern = await getIndexPattern(savedObject);
+      const indexPatterns = indexPattern ? [indexPattern] : [];
+      return new VisualizeEmbeddable(
+        {
+          savedVisualization: savedObject,
+          editUrl,
+          loader,
+          indexPatterns,
+        },
+        initialInput
+      );
+    } catch (e) {
+      return new ErrorEmbeddable({
+        ...initialInput,
+        errorMessage: 'Hit a failure: ' + JSON.stringify(e),
+      });
     }
+  }
 
-    const indexPattern = await getIndexPattern(savedObject);
-    const indexPatterns = indexPattern ? [indexPattern] : [];
-    return new VisualizeEmbeddable(
-      {
-        savedVisualization: savedObject,
-        editUrl,
-        loader,
-        factory: this,
-        indexPatterns,
-        id,
-      },
-      initialInput
-    );
+  public async createNew() {
+    showNewVisModal(this.visTypes, {
+      editorParams: ['addToDashboard'],
+    });
   }
 }

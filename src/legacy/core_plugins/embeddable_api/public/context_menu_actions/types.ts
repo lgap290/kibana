@@ -36,5 +36,5 @@ export interface PanelActionAPI<
   /**
    * Information about the current state of the panel and dashboard.
    */
-  container: C;
+  container?: C;
 }

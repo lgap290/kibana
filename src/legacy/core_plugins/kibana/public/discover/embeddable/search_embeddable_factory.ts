@@ -88,27 +88,36 @@ export class SearchEmbeddableFactory extends EmbeddableFactory<SearchInput, Sear
    * @param onEmbeddableStateChanged
    * @return
    */
-  public create(id: string, initialInput: SearchInput) {
+  public create(initialInput: SearchInput) {
     if (!initialInput.savedObjectId) {
-      return new ErrorEmbeddable(id, 'Need a saved object id to load search embeddable');
+      return new ErrorEmbeddable({
+        ...initialInput,
+        errorMessage: 'Need a saved object id to load search embeddable',
+      });
     }
 
     const editUrl = this.getEditPath(initialInput.savedObjectId);
-
     // can't change this to be async / awayt, because an Anglular promise is expected to be returned.
-    return this.searchLoader.get(initialInput.savedObjectId).then(savedObject => {
-      return new SearchEmbeddable(
-        {
-          courier: this.courier,
-          savedSearch: savedObject,
-          editUrl,
-          $rootScope: this.$rootScope,
-          $compile: this.$compile,
-          factory: this,
-          id,
-        },
-        initialInput
-      );
-    });
+    return this.searchLoader
+      .get(initialInput.savedObjectId)
+      .then(savedObject => {
+        return new SearchEmbeddable(
+          {
+            courier: this.courier,
+            savedSearch: savedObject,
+            editUrl,
+            $rootScope: this.$rootScope,
+            $compile: this.$compile,
+            factory: this,
+          },
+          initialInput
+        );
+      })
+      .catch((e: any) => {
+        return new ErrorEmbeddable({
+          ...initialInput,
+          errorMessage: 'Hit a failure: ' + JSON.stringify(e),
+        });
+      });
   }
 }

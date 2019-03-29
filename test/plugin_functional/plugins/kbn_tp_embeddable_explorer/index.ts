@@ -33,6 +33,10 @@ export default function(kibana: any) {
         order: 1,
         main: 'plugins/kbn_tp_embeddable_explorer',
       },
+      embeddableActions: ['plugins/kbn_tp_embeddable_explorer/actions/hello_world_action'],
+      embeddableFactories: [
+        'plugins/kbn_tp_embeddable_explorer/embeddables/hello_world_embeddable',
+      ],
     },
     init(server: Legacy.Server) {
       const embeddableExplorer = new EmbeddableExplorer(server);

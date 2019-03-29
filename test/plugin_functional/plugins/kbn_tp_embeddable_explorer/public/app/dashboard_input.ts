@@ -17,7 +17,10 @@
  * under the License.
  */
 
-export const dashboardInput = {
+import { DashboardContainerInput } from 'plugins/dashboard_embeddable/index';
+import { QueryLanguageType, ViewMode } from 'plugins/embeddable_api/types';
+
+export const dashboardInput: DashboardContainerInput = {
   title: 'New Dashboard',
   description: '',
   panels: {
@@ -29,10 +32,12 @@ export const dashboardInput = {
         x: 0,
         y: 0,
       },
-      id: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
-      panelIndex: '1',
+      initialInput: {
+        savedObjectId: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
+      },
+      customization: {},
+      embeddableId: '1',
       type: 'visualization',
-      version: '8.0.0',
     },
     '2': {
       gridData: {
@@ -42,10 +47,12 @@ export const dashboardInput = {
         x: 24,
         y: 0,
       },
-      id: '3ba638e0-b894-11e8-a6d9-e546fe2bba5f',
-      panelIndex: '2',
+      initialInput: {
+        savedObjectId: '3ba638e0-b894-11e8-a6d9-e546fe2bba5f',
+      },
+      customization: {},
+      embeddableId: '2',
       type: 'search',
-      version: '8.0.0',
     },
     '3': {
       gridData: {
@@ -55,17 +62,19 @@ export const dashboardInput = {
         x: 0,
         y: 15,
       },
-      id: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
-      panelIndex: '3',
+      initialInput: {
+        savedObjectId: '37cc8650-b882-11e8-a6d9-e546fe2bba5f',
+      },
+      customization: {},
+      embeddableId: '3',
       type: 'visualization',
-      version: '8.0.0',
     },
   },
   filters: [],
   hidePanelTitles: false,
   isFullScreenMode: false,
   query: {
-    language: 'kuery',
+    language: QueryLanguageType.KUERY,
     query: '',
   },
   timeRange: {
@@ -73,5 +82,5 @@ export const dashboardInput = {
     to: 'now',
   },
   useMargins: true,
-  viewMode: 'view',
+  viewMode: ViewMode.VIEW,
 };

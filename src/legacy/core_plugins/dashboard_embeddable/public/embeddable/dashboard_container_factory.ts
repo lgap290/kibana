@@ -57,11 +57,14 @@ export class DashboardContainerFactory extends EmbeddableFactory<
    * @param onEmbeddableStateChanged
    * @return
    */
-  public async create(id: string, initialInput: DashboardContainerInput) {
+  public async create(initialInput: DashboardContainerInput) {
     if (this.getEmbeddableFactory) {
-      return new DashboardContainer({ id }, initialInput, this.getEmbeddableFactory);
+      return new DashboardContainer(initialInput, this.getEmbeddableFactory);
     } else {
-      return new ErrorEmbeddable(id, 'No embeddable factory to create dashboard');
+      return new ErrorEmbeddable({
+        ...initialInput,
+        errorMessage: 'No embeddable factory to create dashboard',
+      });
     }
   }
 }

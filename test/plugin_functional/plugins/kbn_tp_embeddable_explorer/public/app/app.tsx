@@ -18,10 +18,10 @@
  */
 
 import { EuiTab } from '@elastic/eui';
-import React, { Component } from 'react';
 import { EmbeddableFactory } from 'plugins/embeddable_api/index';
-import { CustomContainerExample } from './custom_container_example';
+import React, { Component } from 'react';
 import { DashboardContainerExample } from './dashboard_container_example';
+import { ListContainerExample } from './list_container_example';
 import { VisualizeEmbeddableExample } from './visualize_embeddable_example';
 
 export interface AppProps {
@@ -85,7 +85,7 @@ export class App extends Component<AppProps, { selectedTabId: string }> {
         return <DashboardContainerExample getEmbeddableFactory={this.props.getEmbeddableFactory} />;
       }
       case 'customContainer': {
-        return <CustomContainerExample getEmbeddableFactory={this.props.getEmbeddableFactory} />;
+        return <ListContainerExample getEmbeddableFactory={this.props.getEmbeddableFactory} />;
       }
       case 'visualizeEmbeddable': {
         return (
